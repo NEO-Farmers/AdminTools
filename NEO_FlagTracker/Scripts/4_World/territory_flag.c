@@ -5,27 +5,27 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	string m_playerID = "Unknown"; 
 	
 	// Name and SteamID of the player who placed the flagpole kit 
-	// NOTE: any flagpoles built before mod install won't have this.	
+	// NOTE: any flagpoles built before mod install won't have this.
 	string m_builderName = "Unknown";
 	string m_builderID = "Unknown";
 
 
-    // *****************************************************************************
-    // Constructor, mostly copied from CFTools example, you can see frmo their 
+	// *****************************************************************************
+	// Constructor, mostly copied from CFTools example, you can see frmo their 
 	// comment, it needs deferred execution. This may cause a race condition with
 	// OnStoreLoad, hence the update call in AfterStoreLoad (basicterritories uses 
 	// this method as well).
 	// *****************************************************************************
-    void TerritoryFlag () 
+	void TerritoryFlag () 
 	{
 		// MODDED *****************************************
-        // CFTools base mod is going to post its own event with this._registeredInstance,
+		// CFTools base mod is going to post its own event with this._registeredInstance,
 		// we won't conflict with that since our 'update' removes that object, don't want
 		// that to happen and have a possible null reference.
-    }
+	}
 
 
-    // ***************************************************************************
+	// ***************************************************************************
 	// _UpdateFlagManager
 	//
 	// This should get called any time player or builder is updated to update
@@ -35,17 +35,17 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	{
 #ifdef NEOFLAG_DEBUG 
 		Print("Enter: _UpdateFlagManager");
-#endif		
+#endif
 		TerritoryFlagManager tfm;
 		NEOFlagInfo nfi;
 
-        nfi = new NEOFlagInfo;
+		nfi = new NEOFlagInfo;
 		if (!nfi)
 		{
 #ifdef NEOFLAG_DEBUG 
 			Print("couldn't create new neoflaginfo");
 			Print("Leave: _UpdateFlagManager");
-#endif			
+#endif
 			return;
 		}
 		
@@ -55,7 +55,7 @@ modded class TerritoryFlag extends BaseBuildingBase {
 #ifdef NEOFLAG_DEBUG 
 			Print("couldn't get flag manager");
 			Print("Leave: _UpdateFlagManager");
-#endif			
+#endif
 			return;
 		}
 		
@@ -70,7 +70,7 @@ modded class TerritoryFlag extends BaseBuildingBase {
 		
 #ifdef NEOFLAG_DEBUG 
 		Print("Leave: _UpdateFlagManager");
-#endif					
+#endif
 	}
 	
 	
@@ -87,7 +87,7 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	// param: Man player - the Man object from the OnPlacementComplete's 'man' argument
 	// ** NOTE THIS IS NOT a PlayerBase object, but still has a GetIdentity function
 	// *****************************************************************************
-    void SetBuilder(Man player)
+	void SetBuilder(Man player)
 	{
 #ifdef NEOFLAG_DEBUG 
 		Print("Enter: SetBuilder");
@@ -109,7 +109,7 @@ modded class TerritoryFlag extends BaseBuildingBase {
 #ifdef NEOFLAG_DEBUG 
 			Print("id was null, can't set to flag");
 			Print("Leave: SetBuilder");
-#endif			
+#endif
 			return;
 		}
 		
@@ -119,14 +119,14 @@ modded class TerritoryFlag extends BaseBuildingBase {
 
 #ifdef NEOFLAG_DEBUG
 		Print("Settting builder to: " + this.m_builderName + " (" + this.m_builderID + ")");
-#endif 				
+#endif
 		
-		this._UpdateFlagManager();		
+		this._UpdateFlagManager();
 		
 		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this._UpdateGameLabs);
 #ifdef NEOFLAG_DEBUG
 		Print("Leave: SetBuilder");
-#endif			
+#endif
 	}
 	
 	// ***************************************************************************
@@ -141,18 +141,18 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	//
 	// param: PlayerBase player - the PlayerBase object from the action's 'action_data' argument
 	// ***********************************************************************
-    void SetPlayer(PlayerBase player)
+	void SetPlayer(PlayerBase player)
 	{
 #ifdef NEOFLAG_DEBUG 
 		Print("Enter: SetPlayer");
-#endif		
+#endif
 
 		if (!player)
 		{
 #ifdef NEOFLAG_DEBUG 
 			Print("player was null, can't set to flag");
 			Print("Leave: SetPlayer");
-#endif			
+#endif
 			return;
 		}
 		
@@ -162,7 +162,7 @@ modded class TerritoryFlag extends BaseBuildingBase {
 #ifdef NEOFLAG_DEBUG 
 			Print("player.GetIdentity() returned null, can't set to flag");
 			Print("Leave: SetPlayer");
-#endif			
+#endif
 			return;
 		}
 		// this should return strings and not a potential null pointer
@@ -171,38 +171,38 @@ modded class TerritoryFlag extends BaseBuildingBase {
 		
 #ifdef NEOFLAG_DEBUG
 		Print("Settting player to: " + this.m_playerName + " (" + this.m_playerID + ")");
-#endif 				
-				
+#endif 
+		
 		this._UpdateFlagManager();
 		
 		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this._UpdateGameLabs);
-				
+		
 #ifdef NEOFLAG_DEBUG 
 		Print("Leave: SetPlayer");
-#endif		
+#endif
 	}
 	
-		
+	
 	// *************************************************************************
 	// _UpdateGameLabs
 	//
 	// Function to post updated player/builder info to CFTools
 	// *************************************************************************
-    private void _UpdateGameLabs() 
+	private void _UpdateGameLabs() 
 	{
 #ifdef NEOFLAG_DEBUG 
 		Print("Enter: _UpdateGameLabs");
 		Print("Posting player name/id: " + m_playerName + "/" + m_playerID);
 		Print("Posting builder name/id: " + m_builderName + "/" +m_builderID);
-#endif		
-  
+#endif
+
 #ifndef GAMELABS
 #ifdef NEOFLAG_INFO
 		Print("Gamelabs not installed");
 #endif
 #ifdef NEOFLAG_DEBUG 
 		Print("Leave: _UpdateGameLabs");
-#endif		
+#endif
 		return;
 #endif
 
@@ -210,48 +210,48 @@ modded class TerritoryFlag extends BaseBuildingBase {
 		// This code is mostly from CFTools _InitGameLabs example for this class 
 		// on github, we tweaked it to add the player/builder info
 		float remainingLifetime = GetLifetime() / 3600;
-        if(GetGameLabs()) 
+		if(GetGameLabs()) 
 		{
-            if(GetGameLabs().IsServer()) 
+			if(GetGameLabs().IsServer()) 
 			{
 				//_registeredInstance class member is actually provided by CFTools
 				// for this class
-                if(this._registeredInstance) 
+				if(this._registeredInstance) 
 				{
 					GetGameLabs().RemoveEvent(this._registeredInstance);
 				}
 				this._registeredInstance = new _Event("<b>Territory Flag</b><br/>PlacedBy: " + m_builderName + " (" + m_builderID + ")<br/>" + "Raised By: " + m_playerName + " (" + m_playerID + ")<br/>" + "Flag Level: " + Math.Round(GetRefresherTime01() * 100) + " %<br/>Remaining Lifetime: ~ " + Math.Round(remainingLifetime) + " hours", "pennant", this);
 				GetGameLabs().RegisterEvent(this._registeredInstance);
-            }
-        }
+			}
+		}
 #endif
 
 #ifdef NEOFLAG_DEBUG 
 		Print("Leave: _UpdateGameLabs");
 #endif
 	}
-	
 
-    // *****************************************************************
+
+	// *****************************************************************
 	// Destructor
 	// This is from CFTools github example for this class and removes the 
 	// CFTools marker when the object is destroyed
 	// *****************************************************************
-    void ~TerritoryFlag () 
+	void ~TerritoryFlag () 
 	{
 #ifdef GAMELABS
-        if(GetGameLabs()) 
+		if(GetGameLabs()) 
 		{
-            if(GetGameLabs().IsServer()) 
+			if(GetGameLabs().IsServer()) 
 			{
-                if(this._registeredInstance) 
+				if(this._registeredInstance) 
 				{
 					GetGameLabs().RemoveEvent(this._registeredInstance);
 				}
-            }
-        }
+			}
+		}
 #endif
-    }
+	}
 
 	
 	// *************************************************************************
@@ -265,7 +265,7 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	{
 #ifdef NEOFLAG_DEBUG
 		Print("Enter: AfterStoreLoad");
-#endif		
+#endif
 		super.AfterStoreLoad();
 		
 		TerritoryFlagManager tfm;
@@ -277,13 +277,13 @@ modded class TerritoryFlag extends BaseBuildingBase {
 #ifdef NEOFLAG_INFO
 			Print("Unable to get flag manager");
 			Print("Leave: AfterStoreLoad");
-#endif			
+#endif
 			return;
 		}
 		
 		
 		nfi = tfm.GetFlagInfo(this.GetPosition());
-			
+		
 		
 		if (nfi)
 		{
@@ -294,10 +294,10 @@ modded class TerritoryFlag extends BaseBuildingBase {
 		}
 		
 		// defer this call a bit extra just so we don't conflict with the CF tools constructor (5 second delay)
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this._UpdateGameLabs, 5000);
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this._UpdateGameLabs, 5000);
 #ifdef NEOFLAG_DEBUG
 		Print("Leave: AfterStoreLoad");
-#endif		
+#endif
 	}
 	
 	
@@ -312,7 +312,7 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	{
 #ifdef NEOFLAG_DEBUG
 		Print("Enter: LogAnimateFlag");
-#endif		
+#endif
 		
 		super.LogAnimateFlag(newPhase, player);
 		
@@ -320,14 +320,14 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	    {
 			this.SetPlayer(player);
 		}
-			
+		
 #ifdef NEOFLAG_DEBUG
 		Print("Leave: LogAnimateFlag");
-#endif		
+#endif
 	}
 	
 
-    // ******************************************************************************
+	// ******************************************************************************
 	// OnPartBuiltServer
 	//
 	// This is a better place to catch who is building the flag, it'll end up
@@ -336,14 +336,14 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	{
 #ifdef NEOFLAG_DEBUG
 		Print("Enter: OnPartBuiltServer");
-#endif				
+#endif
 
 		super.OnPartBuiltServer(player, part_name, action_id);
 		this.SetBuilder(player);
 		
 #ifdef NEOFLAG_DEBUG
 		Print("Leave: OnPartBuiltServer");
-#endif				
+#endif
 	}
 }; // end modded TerritoryFlag class
 

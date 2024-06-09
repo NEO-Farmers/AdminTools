@@ -43,7 +43,7 @@ static ref TerritoryFlagManager GetFlagManager() {
 		}
 #endif	
 	return g_territoryFlagManager;
-};	
+};
 
 
 // *******************************************************************************
@@ -60,7 +60,7 @@ class TerritoryFlagManager
 	{
 #ifdef NEOFLAG_DEBUG
 		Print("Enter: TerritoryFlagManager constructor, should only happen once as a singleton");
-#endif 		
+#endif 
 
 		m_infoArray = new array<ref NEOFlagInfo>;
 		if (!m_infoArray)
@@ -74,7 +74,7 @@ class TerritoryFlagManager
 		
 #ifdef NEOFLAG_DEBUG
 		Print ("Leave: TerritoryFlagManager constructor");
-#endif 		
+#endif 
 	}
 	
 	
@@ -105,7 +105,7 @@ class TerritoryFlagManager
 			Print("If you see this message on every start, something is wrong with storing flag info");
 			Print("However, this is normal on first run or if data was cleared, continuing");		
 			Print("Leave: LoadFlagInfo");
-#endif			
+#endif
 			return true;
 		}
 		
@@ -162,7 +162,7 @@ class TerritoryFlagManager
 			Print("Error converting neoflag json to array:");
 			Print(errorstring);
 			Print("Leave: LoadFlagInfo");
-#endif			
+#endif
 			return false;
 		}
 		
@@ -171,7 +171,7 @@ class TerritoryFlagManager
 #ifdef NEOFLAG_INFO
 			Print("internal info array was null");
 			Print("Leave: LoadFlagInfo");
-#endif			
+#endif
 			return false;
 		}
 		
@@ -191,7 +191,7 @@ class TerritoryFlagManager
 	// Stores flag data in json file in profiles (see NEOFLAG_FILENAME in defines.c)
 	// ***********************************************************************
 	bool StoreFlagInfo ()
-	{		
+	{
 #ifdef NEOFLAG_DEBUG
 		Print("Enter: StoreFlagInfo");
 #endif
@@ -203,7 +203,7 @@ class TerritoryFlagManager
 #ifdef NEOFLAG_INFO
 			Print("Unable to open neoflag file for writing: " + NEOFLAG_FILENAME);
 			Print("Leave: StoreFlagInfo");			
-#endif	
+#endif
 			return false;
 		}
 		
@@ -217,14 +217,14 @@ class TerritoryFlagManager
 			Print("Leave: StoreFlagInfo");			
 #endif
 			return false;
-		}		
+		}
 		
 		if (!m_infoArray)
 		{
 #ifdef NEOFLAG_INFO
 			Print("internal info array was null");
 			Print("Leave: StoreFlagInfo");
-#endif			
+#endif
 			return false;
 		}
 		
@@ -257,7 +257,7 @@ class TerritoryFlagManager
 	{
 #ifdef NEOFLAG_DEBUG
 		Print("Enter: AddFlagInfo");
-#endif	
+#endif
 	
 		int i;
 		NEOFlagInfo temp;
@@ -267,16 +267,16 @@ class TerritoryFlagManager
 #ifdef NEOFLAG_INFO
 			Print("function was passed a null value");
 			Print("Leave: AddFlagInfo");
-#endif			
+#endif
 			return;
-		}		
+		}
 		
 		if (!m_infoArray)
 		{
 #ifdef NEOFLAG_INFO
 			Print("internal info array was null");
 			Print("Leave: AddFlagInfo");
-#endif			
+#endif
 			return;
 		}
 		
@@ -287,7 +287,7 @@ class TerritoryFlagManager
 			{
 #ifdef NEOFLAG_INFO
 				Print("internal info array held null value, skipping");
-#endif				
+#endif
 				continue;
 			}
 			
@@ -295,7 +295,7 @@ class TerritoryFlagManager
 			{
 #ifdef NEOFLAG_DEBUG
 				Print("Removing old info for flag found at position: " + temp.position);
-#endif			
+#endif
 				m_infoArray.Remove(i);
 				continue; // would put a break here, but we want to kill dupes too
 			}
@@ -311,7 +311,7 @@ class TerritoryFlagManager
 
 #ifdef NEOFLAG_DEBUG
 		Print("Leave: AddFlagInfo");
-#endif		
+#endif
 
 	}
 	
@@ -326,7 +326,7 @@ class TerritoryFlagManager
 		
 #ifdef NEOFLAG_DEBUG
 		Print("Enter: GetFlagInfo, position: " + position);
-#endif	
+#endif
 	
 		int i;
 		NEOFlagInfo temp;
@@ -336,7 +336,7 @@ class TerritoryFlagManager
 #ifdef NEOFLAG_INFO
 			Print("internal info array was null");
 			Print("Leave: GetFlagInfo");
-#endif			
+#endif
 			return null;
 		}
 		
@@ -348,7 +348,7 @@ class TerritoryFlagManager
 #ifdef NEOFLAG_DEBUG
 				Print("Returning info for flag found at position: " + position);
 				Print("Leave: GetFlagInfo");
-#endif				
+#endif
 				return temp;
 			}
 		}
@@ -357,11 +357,11 @@ class TerritoryFlagManager
 #ifdef NEOFLAG_DEBUG
 		Print("No flag found at position: " + position);
 		Print("Leave: GetFlagInfo");
-#endif		
-		return null;			
+#endif
+		return null;
 	}
 	
 } // end TerritoryFlagManagerClass
-	
+
 
 
