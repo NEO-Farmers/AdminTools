@@ -5,7 +5,7 @@ modded class ActionForceConsume : ActionContinuousBase
     // ActionForceDrink, ActionForceFeed, ActionForceFeedSmall, ActionForceFeedCan
     override string GetAdminLogMessage(ActionData action_data)
     {
-        PlayerBase targetPlayer = PlayerBase.Cast(action_data.m_Target.GetObject())
+        PlayerBase targetPlayer = PlayerBase.Cast(action_data.m_Target.GetObject());
         string targetinfo = "unknown";
         if (targetPlayer)
         {
