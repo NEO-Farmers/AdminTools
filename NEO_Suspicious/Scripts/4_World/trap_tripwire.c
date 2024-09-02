@@ -8,7 +8,11 @@ modded class TripwireTrap : TrapBase
         Man suspect;
         float suspect_distance_squared = m_neo_minimum_guilt_range_squared; // default is out of range
         float distance;
-        array<Man> playerlist;
+        array<Man> playerlist = new array<Man>;
+        if (!playerlist)
+        {
+            return null; // could not allocate an array
+        }
         GetGame().GetPlayers(playerlist);
         if (playerlist.Count() <= 0)
         {

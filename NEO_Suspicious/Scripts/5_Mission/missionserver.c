@@ -4,7 +4,7 @@
 
 modded class MissionServer {
 #ifdef GAMELABS
-    override GLActionRegisterHook() {
+    override void GLActionRegisterHook() {
         super.GLActionRegisterHook();
 
         // force feed actions found in scripts/4_world/classes/useractionscomponent/actionconstructor.c
