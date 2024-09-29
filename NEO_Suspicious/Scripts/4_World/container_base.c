@@ -1,5 +1,5 @@
 
-modded class TentBase extends ItemBase
+modded class DeployableContainer_Base : Container_Base
 {
     override void EEKilled(Object killer)
     {
@@ -20,13 +20,13 @@ modded class TentBase extends ItemBase
             PlayerIdentity pi = playerSource.GetIdentity();
             if (pi)
             {
-                culprit = string.Format("%1 (%2)");
+                culprit = string.Format("%1 (%2)", pi.GetName(), pi.GetPlainId());
             }
 #ifdef GAMELABS            
-            NeoLogToGameLabs(playerSource, "weapon", "tent", "destroyed");
+            NeoLogToGameLabs(playerSource, "weapon", this.GetDisplayName(), "destroyed");
 #endif
         }
-        string message = string.Format("%1 destroyed tent at %2", culprit, GetPosition());
+        string message = string.Format("%1 destroyed %2 at %3", culprit, this.GetDisplayName(), GetPosition());
         GetGame().AdminLog(message);
     }
 }

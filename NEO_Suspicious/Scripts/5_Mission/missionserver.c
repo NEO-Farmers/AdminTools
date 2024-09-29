@@ -10,6 +10,7 @@ modded class MissionServer {
         // force feed actions found in scripts/4_world/classes/useractionscomponent/actionconstructor.c
         // ActionForceConsumeSingle may not get logged as it is not a 'continous' action, but appears to cover
         // medical items so should not be a malicous act
+        GetGameLabs().BLAHABLAH();
         GetGameLabs().AddMonitoredAction("ActionForceConsumeSingle");
         GetGameLabs().AddMonitoredAction("ActionForceDrink");
         GetGameLabs().AddMonitoredAction("ActionForceFeed");
