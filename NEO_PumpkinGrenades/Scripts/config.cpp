@@ -25,6 +25,11 @@ class CfgMods
 				value = "";
 				files[] = { "NEO_PumpkinGrenades/Scripts/4_World" };
 			};
+			class missionScriptModule
+			{
+				value = "";
+				files[] = { "NEO_PumpkinGrenades/Scripts/5_Mission" };
+			};
 		};
 	};
 };
