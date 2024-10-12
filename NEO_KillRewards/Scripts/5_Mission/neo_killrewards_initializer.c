@@ -1,9 +1,12 @@
+#ifdef SERVER
+
 modded class MissionServer extends MissionBase
 {
-    override void OnInit()
+    void MissionServer ()
     {
-        super.OnInit();
         NEO_KillRewardsData.loadData();
     }
     
 }
+
+#endif // SERVER

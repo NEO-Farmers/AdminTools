@@ -4,9 +4,7 @@ class CfgPatches
 	{
 		requiredAddons[] =
 		{
-			// This should cause this mod to require CFTools
-			// and hopefully load after
-			"GameLabs_Scripts"
+			"DZ_Data"
 		};
 	};
 };
@@ -22,11 +20,18 @@ class CfgMods
 		
 		class defs
 		{
+			class gameScriptModule
+			{
+				value="";
+				files[]={"NEO_KillRewards/Scripts/3_Game"};
+			};
+/*
 			class worldScriptModule
 			{
 				value = "";
 				files[] = { "NEO_KillRewards/Scripts/4_World" };
 			};
+*/
 			class missionScriptModule
 			{
 				value = "";
