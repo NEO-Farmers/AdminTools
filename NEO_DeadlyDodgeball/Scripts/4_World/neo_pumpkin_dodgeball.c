@@ -41,16 +41,16 @@ modded class Pumpkin : Edible_Base
             
             if (other)
             {
-                PlayerBase pb = PlayerBase.Cast(other);
-                if (pb)
+                Man m = Man.Cast(other);
+                if (m)
                 {
-                    if (pb.IsAlive()) // can bounce past dead bodies
+                    if (m.IsAlive()) // can bounce past dead bodies
                     {
                         if (NEO_DodgeBallDebug)
                         {
                             GetGame().AdminLog("Killing player");
                         }
-                        pb.SetHealth("","",0.0);
+                        m.SetHealth("","",0.0);
                         NEO_i_am_a_dodgeball_now = false;
                     }
                     else
