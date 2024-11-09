@@ -3,16 +3,59 @@
 // mostly using the old easter egg code to determine when thrown and then we kill on contact or touch of living player
 // https://github.com/BohemiaInteractive/DayZ-Script-Diff/blob/a22a0553779b157f172283233e91933cc8ee2102/scripts/4_world/entities/itembase/gear/consumables/easteregg.c#L117C1-L135C3
 
-bool NEO_DodgeBallDebug = true;
+bool NEO_DodgeBallDebug = false;
+float NEO_DodgeBall_min_velocity = 0.3; //dodge balls aren't deadly below this velocity
+
+modded class DayZPlayerImplement extends DayZPlayer
+{
+    void NEO_player_contact_dodgeball(IEntity other)
+    {
+        if (other)
+        {
+            Pumpkin p = Pumpkin.Cast(other);
+            if (p)
+            {
+                float velocity = GetVelocity(p).Length();
+                if (velocity < NEO_DodgeBall_min_velocity)
+                {
+                    p.NEO_i_am_a_dodgeball_now = false;
+                    return;
+                }
+                if (p.NEO_i_am_a_dodgeball_now)
+                {
+                    this.SetHealth("","",0.0);
+                    p.NEO_i_am_a_dodgeball_now = false;
+                }
+            }
+        }
+    }
+    
+    // hit other entities
+    override void EOnTouch( IEntity other, int extra )
+    {
+        if (NEO_DodgeBallDebug)
+        {
+            Object ob = Object.Cast(other);
+            GetGame().AdminLog(string.Format("In DayZPlayerImplement::EOnTouch in dodgeball mod, other type: %1", ob.GetType()));
+        }
+        NEO_player_contact_dodgeball(other);
+    }
+    
+    // hit things like the ground (gonna implement just in case)
+    override void EOnContact( IEntity other, Contact extra )
+    {
+        if (NEO_DodgeBallDebug)
+        {
+            Object ob = Object.Cast(other);
+            GetGame().AdminLog(string.Format("In DayZPlayerImplement::EOnContact in dodgeball mod, other type: %1", ob.GetType()));
+        }
+        NEO_player_contact_dodgeball(other);
+    }
+}
 
 modded class Pumpkin : Edible_Base
 {
     bool NEO_i_am_a_dodgeball_now = false;
-
-    void Pumpkin()
-    {
-        SetEventMask(GetEventMask() | EntityEvent.TOUCH);
-    }
     
     void NEO_DodgeBallContact(IEntity other)
     {
@@ -29,7 +72,7 @@ modded class Pumpkin : Edible_Base
             // if not moving (velocity less than .2 for now, then no longer deadly), 
             // otherwise I think ppl will die picking up a stopped 'ball'
             float velocity = GetVelocity(this).Length();
-            if (velocity < 0.2)
+            if (velocity < NEO_DodgeBall_min_velocity)
             {
                 if (NEO_DodgeBallDebug)
                 {
@@ -37,44 +80,6 @@ modded class Pumpkin : Edible_Base
                 }
                 NEO_i_am_a_dodgeball_now = false;
                 return;
-            }
-            
-            if (other)
-            {
-                Man m = Man.Cast(other);
-                if (m)
-                {
-                    if (m.IsAlive()) // can bounce past dead bodies
-                    {
-                        if (NEO_DodgeBallDebug)
-                        {
-                            GetGame().AdminLog("Killing player");
-                        }
-                        m.SetHealth("","",0.0);
-                        NEO_i_am_a_dodgeball_now = false;
-                    }
-                    else
-                    {
-                        if (NEO_DodgeBallDebug)
-                        {
-                            GetGame().AdminLog("contacted player was already dead");
-                        }
-                    }
-                }
-                else
-                {
-                    if (NEO_DodgeBallDebug)
-                    {
-                        GetGame().AdminLog("other in contact was not a player");
-                    }
-                }
-            }
-            else
-            {
-                if (NEO_DodgeBallDebug)
-                {
-                    GetGame().AdminLog("other was null in touch/contact");
-                }
             }
         }
     }
@@ -84,7 +89,8 @@ modded class Pumpkin : Edible_Base
     {
         if (NEO_DodgeBallDebug)
         {
-            GetGame().AdminLog("In EOnTouch in dodgeball mod");
+            Object ob = Object.Cast(other);
+            GetGame().AdminLog(string.Format("In EOnTouch in dodgeball mod, other type: %1", ob.GetType()));
         }
         NEO_DodgeBallContact(other);
     }
@@ -94,7 +100,8 @@ modded class Pumpkin : Edible_Base
     {
         if (NEO_DodgeBallDebug)
         {
-            GetGame().AdminLog("In EOnContact in dodgeball mod");
+            Object ob = Object.Cast(other);
+            GetGame().AdminLog(string.Format("In EOnContact in dodgeball mod, other type: %1", ob.GetType()));
         }
         NEO_DodgeBallContact(other);
     }
