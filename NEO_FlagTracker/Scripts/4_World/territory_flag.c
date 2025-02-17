@@ -162,10 +162,18 @@ modded class TerritoryFlag
 			raisers_string = "";
 			foreach(string name: top_raisers)
 			{
-				raisers_string = raisers_string + string.Format("<br>%1", name);
+				// cull any < > & " ' characters from name that can break html 
+				string cleaned_name;
+				cleaned_name = name;
+				cleaned_name.Replace("&","&amp;");
+				cleaned_name.Replace("<","&lt;");
+				cleaned_name.Replace(">","&gt;");
+				cleaned_name.Replace("\"","&quot;");
+				cleaned_name.Replace("'","&apos;");
+				raisers_string = raisers_string + string.Format("<li>%1</li>", cleaned_name);
 			}
 			
-			displayName = displayName + string.Format("Primary Flag Raisers: %1", raisers_string);
+			displayName = displayName + string.Format("Primary Flag Raisers:<ul>%1</ul>", raisers_string);
 		}
 		else // default gamelabs behavior
 		{
