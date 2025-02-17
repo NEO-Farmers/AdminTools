@@ -7,3 +7,7 @@
 const int NEOFLAGINFO_VERSION = 1;
 
 const string NEOFLAG_FILENAME = "$profile:neoflags.json";
+
+const string NEOFLAG_DATA_DIRECTORY = "$profile:NEOFlagData/";
+
+const int NEOFLAG_RAISER_COUNT = 5; // number of flag raisers to display

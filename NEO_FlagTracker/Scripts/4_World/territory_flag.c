@@ -1,136 +1,59 @@
-modded class TerritoryFlag extends BaseBuildingBase {
-	
-	// Name and SteamID of the latest player to fully raise flag
-	string m_playerName = "Unknown"; 
-	string m_playerID = "Unknown"; 
-	
-	// Name and SteamID of the player who placed the flagpole kit 
-	// NOTE: any flagpoles built before mod install won't have this.
-	string m_builderName = "Unknown";
-	string m_builderID = "Unknown";
+#ifdef SERVER
+#ifdef GAMELABS
 
-
-	// *****************************************************************************
-	// Constructor, mostly copied from CFTools example, you can see frmo their 
-	// comment, it needs deferred execution. This may cause a race condition with
-	// OnStoreLoad, hence the update call in AfterStoreLoad (basicterritories uses 
-	// this method as well).
-	// *****************************************************************************
+modded class TerritoryFlag
+{
+	// Newer version of this mod just overrides the base CFTools string
+	// generation and stores multiple flag raisers using native serializer
+	// and persistent object ID based file names
+	// see changes to CFTools flags here:
+	// https://github.com/CFToolsGameLabs/dayz-examples/commit/e0daff605e366c6e42b7443c7e1f68c81746b3e6
+	//
+	// Going to attempt to save all flag raisers using a method taken from OnStoreSave/OnStoreLoad in:
+	// scripts/4_world/classes/playerstomach.c
+	
+	
+	ref TStringIntMap	m_NEOF_flag_raisers; // map of string to int string is "name (steamid)", int is number of times flag is raised
+	bool				m_NEOF_flag_raisers_changed; // flag to indicate if list of raisers needs to be saved
+	
+	
 	void TerritoryFlag () 
 	{
-		// MODDED *****************************************
-		// CFTools base mod is going to post its own event with this._registeredInstance,
-		// we won't conflict with that since our 'update' removes that object, don't want
-		// that to happen and have a possible null reference.
+		m_NEOF_flag_raisers = new TStringIntMap;
+		if (!FileExist(NEOFLAG_DATA_DIRECTORY))
+		{
+			MakeDirectory(NEOFLAG_DATA_DIRECTORY);
+		}
+		m_NEOF_flag_raisers_changed = false;
 	}
 
-
-	// ***************************************************************************
-	// _UpdateFlagManager
-	//
-	// This should get called any time player or builder is updated to update
-	// the flag manager's information
-	// ***************************************************************************
-	void _UpdateFlagManager()
+	void ~TerritoryFlag ()
 	{
-#ifdef NEOFLAG_DEBUG 
-		Print("Enter: _UpdateFlagManager");
-#endif
-		TerritoryFlagManager tfm;
-		NEOFlagInfo nfi;
-
-		nfi = new NEOFlagInfo;
-		if (!nfi)
+		if (m_NEOF_flag_raisers)
 		{
-#ifdef NEOFLAG_DEBUG 
-			Print("couldn't create new neoflaginfo");
-			Print("Leave: _UpdateFlagManager");
-#endif
-			return;
+			delete m_NEOF_flag_raisers;
 		}
-		
-		tfm = GetFlagManager();
-		if (!tfm)
-		{
-#ifdef NEOFLAG_DEBUG 
-			Print("couldn't get flag manager");
-			Print("Leave: _UpdateFlagManager");
-#endif
-			return;
-		}
-		
-		nfi.m_playerName = m_playerName;
-		nfi.m_playerID = m_playerID;
-		nfi.m_builderName = m_builderName;
-		nfi.m_builderID = m_builderID;
-		nfi.position = this.GetPosition();
-		nfi.version = NEOFLAGINFO_VERSION;
-		
-		tfm.AddFlagInfo(nfi);
-		
-#ifdef NEOFLAG_DEBUG 
-		Print("Leave: _UpdateFlagManager");
-#endif
 	}
 	
-	
-	// *****************************************************************************
-	// SetBuilder
-	//
-	// This function will set the internal builder name and steam id values and we
-	// expect it to be called from the modded TerritoryFlagKit.OnPlacementComplete()
-	// function. 
-	//
-	// This should be getting called on successful placement and builder should be 
-	// updated unconditionally. Should only happen once in the objects lifetime.
-	//
-	// param: Man player - the Man object from the OnPlacementComplete's 'man' argument
-	// ** NOTE THIS IS NOT a PlayerBase object, but still has a GetIdentity function
-	// *****************************************************************************
-	void SetBuilder(Man player)
+	// **************************************************************************
+	// NEOF_Flag_GetFilename
+	// Get a unique file name for this object
+	// **************************************************************************
+	string NEOF_Flag_GetFilename()
 	{
-#ifdef NEOFLAG_DEBUG 
-		Print("Enter: SetBuilder");
-#endif
-
-		if (!player)
-		{
-#ifdef NEOFLAG_DEBUG 
-			Print("player was null, can't set builder for flag");
-			Print("Leave: SetBuilder");
-#endif
-			return;
-		}
-
-		PlayerIdentity id;
-		id  = player.GetIdentity();
-		if (!id)
-		{
-#ifdef NEOFLAG_DEBUG 
-			Print("id was null, can't set to flag");
-			Print("Leave: SetBuilder");
-#endif
-			return;
-		}
+		int b1;
+		int b2;
+		int b3;
+		int b4;
+		string filename;
+		GetPersistentID(b1, b2, b3, b4);
 		
-		// this should return strings and not a potential null pointer
-		this.m_builderName = id.GetName();
-		this.m_builderID = id.GetPlainId();
-
-#ifdef NEOFLAG_DEBUG
-		Print("Settting builder to: " + this.m_builderName + " (" + this.m_builderID + ")");
-#endif
-		
-		this._UpdateFlagManager();
-		
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this._UpdateGameLabs);
-#ifdef NEOFLAG_DEBUG
-		Print("Leave: SetBuilder");
-#endif
+		filename = string.FORMAT("%1flag_%2_%3_%4_%5", NEOFLAG_DATA_DIRECTORY, b1, b2, b3, b4);
+		return filename;
 	}
 	
 	// ***************************************************************************
-	// SetPlayer
+	// NEOF_Flag_SetPlayer
 	// This function will set the internal player name and steam id values and we
 	// expect it to be called from the modded ActionRaiseFlag.OnFinishProgressServer()
 	// function. 
@@ -141,119 +64,174 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	//
 	// param: PlayerBase player - the PlayerBase object from the action's 'action_data' argument
 	// ***********************************************************************
-	void SetPlayer(PlayerBase player)
+	void NEOF_Flag_SetPlayer(PlayerBase player)
 	{
-#ifdef NEOFLAG_DEBUG 
-		Print("Enter: SetPlayer");
-#endif
-
+		NEOF_flag_debug("Enter: NEOF_Flag_SetPlayer");
+		
 		if (!player)
 		{
-#ifdef NEOFLAG_DEBUG 
-			Print("player was null, can't set to flag");
-			Print("Leave: SetPlayer");
-#endif
+			NEOF_flag_debug("player was null, can't set to flag");
+			NEOF_flag_debug("Leave: NEOF_Flag_SetPlayer");
 			return;
 		}
 		
 		PlayerIdentity id = player.GetIdentity();
 		if (!id)
 		{
-#ifdef NEOFLAG_DEBUG 
-			Print("player.GetIdentity() returned null, can't set to flag");
-			Print("Leave: SetPlayer");
-#endif
+			NEOF_flag_debug("player.GetIdentity() returned null, can't set to flag");
+			NEOF_flag_debug("Leave: NEOF_Flag_SetPlayer");
 			return;
 		}
+		
 		// this should return strings and not a potential null pointer
-		this.m_playerName = id.GetName();
-		this.m_playerID = id.GetPlainId();
+		string playerName = id.GetName();
+		string playerID = id.GetPlainId();
 		
-#ifdef NEOFLAG_DEBUG
-		Print("Settting player to: " + this.m_playerName + " (" + this.m_playerID + ")");
-#endif 
+		string raiserString = string.Format("%1 (%2)", playerName, playerID);
+		NEOF_flag_debug("Adding flag raiser: " + raiserString);
 		
-		this._UpdateFlagManager();
+		int raise_count = 0;
+		if (m_NEOF_flag_raisers)
+		{
+			if(m_NEOF_flag_raisers.Find(raiserString, raise_count))
+			{
+				++raise_count;
+				m_NEOF_flag_raisers.Set(raiserString, raise_count);
+			}
+			else
+			{
+				raise_count = 1; // first time this player raised flag
+				m_NEOF_flag_raisers.Insert(raiserString, raise_count);
+			}
+			m_NEOF_flag_raisers_changed = true;
+			_updateEvent(); // internal function from cftools example on github
+		}
+		else
+		{
+			NEOF_flag_debug("Raiser mapping, not allocated");
+		}
 		
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this._UpdateGameLabs);
-		
-#ifdef NEOFLAG_DEBUG 
-		Print("Leave: SetPlayer");
-#endif
+		NEOF_flag_debug("Leave: NEOF_Flag_SetPlayer");
 	}
 	
 	
-	// *************************************************************************
-	// _UpdateGameLabs
-	//
-	// Function to post updated player/builder info to CFTools
-	// *************************************************************************
-	private void _UpdateGameLabs() 
+	// ***************************************************************************
+	// GL_GetDisplayName
+	// This is a modified version of the CFTools examples function from github
+	// that allows us to override the html that populates the pop-up on the map
+	// in cftools
+	// ***************************************************************************
+	override private string GL_GetDisplayName() 
 	{
-#ifdef NEOFLAG_DEBUG 
-		Print("Enter: _UpdateGameLabs");
-		Print("Posting player name/id: " + m_playerName + "/" + m_playerID);
-		Print("Posting builder name/id: " + m_builderName + "/" +m_builderID);
-#endif
-
-#ifndef GAMELABS
-#ifdef NEOFLAG_INFO
-		Print("Gamelabs not installed");
-#endif
-#ifdef NEOFLAG_DEBUG 
-		Print("Leave: _UpdateGameLabs");
-#endif
-		return;
-#endif
-
-#ifdef GAMELABS
-		// This code is mostly from CFTools _InitGameLabs example for this class 
-		// on github, we tweaked it to add the player/builder info
 		float remainingLifetime = GetLifetime() / 3600;
-		if(GetGameLabs()) 
+		string steam64 = GL_GetSteam64();
+		string displayName;
+		
+		TStringArray top_raisers = {};
+		if (m_NEOF_flag_raisers)
 		{
-			if(GetGameLabs().IsServer()) 
+			TStringArray key_array = m_NEOF_flag_raisers.GetKeyArray();
+			TIntArray val_array = m_NEOF_flag_raisers.GetValueArray();
+			val_array.Sort(true); // sort larger numbers to lower
+			
+			count = val_array.Count();
+			if (count > NEOFLAG_RAISER_COUNT)
 			{
-				//_registeredInstance class member is actually provided by CFTools
-				// for this class
-				if(this._registeredInstance) 
-				{
-					GetGameLabs().RemoveEvent(this._registeredInstance);
-				}
-				this._registeredInstance = new _Event("<b>Territory Flag</b><br/>PlacedBy: " + m_builderName + " (" + m_builderID + ")<br/>" + "Raised By: " + m_playerName + " (" + m_playerID + ")<br/>" + "Flag Level: " + Math.Round(GetRefresherTime01() * 100) + " %<br/>Remaining Lifetime: ~ " + Math.Round(remainingLifetime) + " hours", "pennant", this);
-				GetGameLabs().RegisterEvent(this._registeredInstance);
+				count = NEOFLAG_RAISER_COUNT;
 			}
-		}
-#endif
-
-#ifdef NEOFLAG_DEBUG 
-		Print("Leave: _UpdateGameLabs");
-#endif
-	}
-
-
-	// *****************************************************************
-	// Destructor
-	// This is from CFTools github example for this class and removes the 
-	// CFTools marker when the object is destroyed
-	// *****************************************************************
-	void ~TerritoryFlag () 
-	{
-#ifdef GAMELABS
-		if(GetGameLabs()) 
-		{
-			if(GetGameLabs().IsServer()) 
+			int i;
+			for (i = 0; i < count; ++i)
 			{
-				if(this._registeredInstance) 
+				int val = val_array.Get(i);
+				foreach(string name: key_array) 
 				{
-					GetGameLabs().RemoveEvent(this._registeredInstance);
+					if (m_NEOF_flag_raisers.Get(name) == val)
+					{
+						top_raisers.Insert(name);
+						key_array.RemoveItem(name);
+						break;
+					}
 				}
 			}
+			delete key_array;
+			delete val_array;
 		}
-#endif
+		if (top_raisers.Count() > 0)
+		{
+			displayName = string.Format("<b>Territory Flag</b><br/>Flag Level: %1 %%<br/>Remaining Lifetime: ~ %2 hours<br/>", Math.Round(GetRefresherTime01() * 100), Math.Round(remainingLifetime));
+			raisers_string = "";
+			foreach(string name: top_raisers)
+			{
+				raisers_string = raisers_string + string.Format("<br>%1", name);
+			}
+			
+			displayName = displayName + string.Format("Primary Flag Raisers: %1", raisers_string);
+		}
+		else // default gamelabs behavior
+		{
+			if(steam64) {
+				displayName = string.Format("<b>Territory Flag</b><br/>Flag Level: %1 %%<br/>Remaining Lifetime: ~ %2 hours<br/>Owner: %3", Math.Round(GetRefresherTime01() * 100), Math.Round(remainingLifetime), steam64);
+			} else {
+				displayName = string.Format("<b>Territory Flag</b><br/>Flag Level: %1 %%<br/>Remaining Lifetime: ~ %2 hours", Math.Round(GetRefresherTime01() * 100), Math.Round(remainingLifetime));
+			}
+		}
+		delete top_raisers;
+		return displayName;
 	}
-
 	
+
+	// *************************************************************************
+	// OnStoreSave
+	// If the flag raiser mapping is updated, then update our saved information
+	// *************************************************************************
+	override void OnStoreSave(ParamsWriteContext ctx)
+	{
+		NEOF_flag_debug("Enter: OnStoreSave");
+		
+		super.OnStoreSave(ctx);
+		if (!m_NEOF_flag_raisers_changed)
+		{
+			NEOF_flag_debug("Flag raisers unchanged");
+			NEOF_flag_debug("Leave: OnStoreSave");
+			return;
+		}
+		
+		if (!m_NEOF_flag_raisers)
+		{
+			NEOF_flag_debug("Flag raisers mapping uninitialized");
+			NEOF_flag_debug("Leave: OnStoreSave");
+			return;
+		}
+		
+		string filename = NEOF_Flag_GetFilename();
+		
+		NEOF_flag_debug("Saving raiser data in " + filename);
+		autoptr TStringIntMap temp_map = new TStringIntMap;
+		temp_map.Copy(m_NEOF_flag_raisers); // get a non-changing mapping just in caes
+		FileSerializer file = new FileSerializer();
+		if (file.Open(filename, FileMode.WRITE))
+		{
+			autoptr TStringArray key_array = temp_map.GetKeyArray();
+			int count = key_array.Count();
+			if (file.Write(count))
+			{
+				foreach(string name: key_array)
+				{
+					file.Write(name);
+					file.Write(temp_map.Get(name));
+				}
+			}
+			
+			file.Close();
+		}
+		else
+		{
+			NEOF_flag_debug("Unable to open file to save");
+		}
+		m_NEOF_flag_raisers_changed = false;
+		NEOF_flag_debug("Leave: OnStoreSave");
+	}
+
 	// *************************************************************************
 	// AfterStoreLoad
 	// This should get called on the after loading data from storage
@@ -263,44 +241,88 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	// **************************************************************************
 	override void AfterStoreLoad()
 	{
-#ifdef NEOFLAG_DEBUG
-		Print("Enter: AfterStoreLoad");
-#endif
+		NEOF_flag_debug("Enter: AfterStoreLoad");
+
 		super.AfterStoreLoad();
+
+		string filename = NEOF_Flag_GetFilename();
 		
-		TerritoryFlagManager tfm;
-		NEOFlagInfo nfi;
-		
-		tfm = GetFlagManager();
-		if (!tfm)
+		if (!FileExist(filename))
 		{
-#ifdef NEOFLAG_INFO
-			Print("Unable to get flag manager");
-			Print("Leave: AfterStoreLoad");
-#endif
-			return;
+			NEOF_flag_debug("no flag raiser data file");
 		}
 		
-		
-		nfi = tfm.GetFlagInfo(this.GetPosition());
-		
-		
-		if (nfi)
+		autoptr TStringIntMap temp_map = new TStringIntMap;
+		bool successful_read = true;
+
+		FileSerializer file = new FileSerializer();
+		if (file.Open(filename, FileMode.READ))
 		{
-			this.m_playerName = nfi.m_playerName;
-			this.m_playerID = nfi.m_playerID;
-			this.m_builderName = nfi.m_builderName;
-			this.m_builderID = nfi.m_builderID;
+			int count;
+			if (file.Read(count))
+			{
+				int i;
+				for (i = 0; i < count; ++i)
+				{
+					string name;
+					int raised;
+					successful_read = file.Read(name);
+					if (!successful_read)
+					{
+						break;
+					}
+					successful_read = file.Read(raised);
+					if (!successful_read)
+					{
+						break;
+					}
+					temp_map.Insert(name, raised);
+				}
+			}
+			else
+			{
+				successful_read = false;
+			}
+			
+			file.Close();
+		}
+		else 
+		{
+			NEOF_flag_debug("Failed to open flag data flie");
+			successful_read = false;
 		}
 		
-		// defer this call a bit extra just so we don't conflict with the CF tools constructor (5 second delay)
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this._UpdateGameLabs, 5000);
-#ifdef NEOFLAG_DEBUG
-		Print("Leave: AfterStoreLoad");
-#endif
+		if (successful_read)
+		{
+			m_NEOF_flag_raisers.Clear();
+			m_NEOF_flag_raisers.Copy(temp_map);
+		}
+		else
+		{
+			NEOF_flag_debug("Failed to successfully read flag raiser data");
+		}
+		NEOF_flag_debug("Leave: AfterStoreLoad");
 	}
 	
-	
+	// **************************************************************************
+	// Delete
+	// Catch object delete here to delete data file that is no longer needed
+	// **************************************************************************
+	override void Delete()
+	{
+		NEOF_flag_debug("Enter: Delete");
+		string filename = NEOF_Flag_GetFilename();
+		
+		if (FileExist(filename))
+		{
+			NEOF_flag_debug("Deleting " + filename);
+			DeleteFile(filename);
+		}
+		
+		super.Delete(); // do this at the end so persistent ID exists for filename
+		
+		NEOF_flag_debug("Leave: Delete");
+	}
 	// ***************************************************************************
 	//LogAnimateFlag
 	//
@@ -310,41 +332,43 @@ modded class TerritoryFlag extends BaseBuildingBase {
 	
 	override protected void LogAnimateFlag(float newPhase, notnull PlayerBase player)	
 	{
-#ifdef NEOFLAG_DEBUG
-		Print("Enter: LogAnimateFlag");
-#endif
+		NEOF_flag_debug("Enter: LogAnimateFlag");
 		
 		super.LogAnimateFlag(newPhase, player);
 		
 		if (newPhase == 0) // 0 == flag raised all the way
 	    {
-			this.SetPlayer(player);
+			this.NEOF_Flag_SetPlayer(player);
 		}
 		
-#ifdef NEOFLAG_DEBUG
-		Print("Leave: LogAnimateFlag");
-#endif
+		NEOF_flag_debug("Leave: LogAnimateFlag");
 	}
 	
 
-	// ******************************************************************************
-	// OnPartBuiltServer
-	//
-	// This is a better place to catch who is building the flag, it'll end up
-	// storing the latest builder for the flag.
-	override void OnPartBuiltServer( notnull Man player, string part_name, int action_id )
+	// *******************************************************************
+	// NEOF_flag_debug
+	// Debug print function, does nothing if NEOFLAG_DEBUG isn't set,
+	// results end up in the script log in the profile directory
+	// *******************************************************************
+	void NEOF_flag_debug(string message)
 	{
-#ifdef NEOFLAG_DEBUG
-		Print("Enter: OnPartBuiltServer");
-#endif
-
-		super.OnPartBuiltServer(player, part_name, action_id);
-		this.SetBuilder(player);
+#ifdef NEOFLAG_DEBUG 
+		int hour;
+		int minute;
+		int second;
+		int year;
+		int month;
+		int day;
 		
-#ifdef NEOFLAG_DEBUG
-		Print("Leave: OnPartBuiltServer");
+		GetYearMonthDay(year, month, day);
+		GetHourMinuteSecond(hour, minute, second);
+		formatted_message = string.Format("%1:%2:%3 %4:%5:%6 (NEOFLAGDEBUG): %7", year, month, day, hour, minute, second, message);
+		Print(formatted_message);
 #endif
 	}
+	
 }; // end modded TerritoryFlag class
 
+#endif // GAMELABS
+#endif //SERVER
 

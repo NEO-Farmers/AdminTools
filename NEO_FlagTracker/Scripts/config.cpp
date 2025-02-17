@@ -18,7 +18,7 @@ class CfgMods
 		type = "mod";
 		dir= "NEO_FlagTracker";
 		name="NEO_FlagTracker";
-		version="0.0.0.1";
+		version="0.0.0.2";
 		
 		class defs
 		{
