@@ -12,22 +12,15 @@ modded class EasterEgg
 	/* arena egg info */
 	bool m_neo_eggs_arena_egg;
 	
-	void EasterEgg()
-	{
-		m_neo_eggs_thrower = null;
-		m_neo_eggs_prize_egg = false;
-		m_neo_eggs_prize_index = 0;
-		m_neo_eggs_arena_egg = false;
-	}
 	
 	override void OnInventoryExit( Man player )
 	{
 		super.OnInventoryExit(player);
-		Print("Neo eggs egg left inventory");
-		Print("cap state:" + m_CaptureState);
-		Print("type: " + m_CreatureType);
+		//Print("Neo eggs egg left inventory");
+		//Print("cap state:" + m_CaptureState);
+		//Print("type: " + m_CreatureType);
 		
-		m_neo_eggs_thrower = player; /* capture who's inventory it left so we know thrower */
+		m_neo_eggs_thrower = player; // capture who's inventory it left so we know thrower
 	}
 	
 	
@@ -39,6 +32,8 @@ modded class EasterEgg
 		string title;
 		string message;
 		string icon;
+		
+		super.OnItemLocationChanged(old_owner, new_owner);
 		
 		if ((old_owner == null) && (new_owner != null))
 		{
