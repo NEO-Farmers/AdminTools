@@ -6,9 +6,9 @@ to be more generic.
 The vanilla object spawner has a field for items labeled "customString" add the following to it 
 to get certain behaviors. The mod will lowercase the string and only checks for the presence of these substrings
 so they may appear anywhere in that field and have the listed effect.
-"neorespawn" - will cause the item to respawn upon delete 
-"neoreporthit" - will send a notification to the player of hits on targets 
-"neoreporttake" - will send a notification to the player not to abuse take-able respawning objects and logs it to the script log.
+- "neorespawn" - will cause the item to respawn upon delete 
+- "neoreporthit" - will send a notification to the player of hits on targets 
+- "neoreporttake" - will send a notification to the player not to abuse take-able respawning objects and logs it to the script log.
 
 example 
 ```
